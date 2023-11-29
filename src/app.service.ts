@@ -1,5 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { CreateTaskDto } from './app.controller';
+import { HttpService } from '@nestjs/axios';
+import { lastValueFrom } from 'rxjs';
 
 @Injectable()
 export class AppService {
@@ -20,6 +22,8 @@ export class AppService {
     return this.tasks;
   }
 
+  constructor(private readonly httpService: HttpService) {}
+
   async createTask(createTaskDto: CreateTaskDto): Promise<CreateTaskDto[]> {
     const newTask: CreateTaskDto = {
       name: createTaskDto.name,
@@ -30,8 +34,26 @@ export class AppService {
 
     this.tasks.push(newTask);
     await new Promise<void>((resolve) => {
-      setTimeout(() => resolve(), 3000);
+      setTimeout(() => resolve(), 1000);
     });
+
+    return this.tasks;
+  }
+
+  async getTasksPython(apiUrl: string): Promise<CreateTaskDto[]> {
+    try {
+      await new Promise<void>((resolve) => {
+        setTimeout(() => resolve(), 1000);
+      });
+
+      const response = await lastValueFrom(this.httpService.get(apiUrl));
+      this.tasks = response.data;
+
+      console.log('Lista de tarefas Python:', this.tasks);
+    } catch (error) {
+      console.error('Erro ao chamar a API Python:', error.message);
+      throw error;
+    }
 
     return this.tasks;
   }
